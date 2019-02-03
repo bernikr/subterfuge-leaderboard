@@ -25,7 +25,7 @@ def str_to_int(s):
 
 def main():
     Base.metadata.create_all(engine)
-    locale.setlocale(locale.LC_ALL, 'en_US')
+    locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 
     page = requests.get('http://subterfuge-game.com/leaderboards.html')
     rows = lxml.html.fromstring(page.content).xpath('//table/tr')
