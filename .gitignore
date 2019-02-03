@@ -15,3 +15,7 @@
 
 # DB
 subterfuge.db
+
+# Sync Files
+*.ffs_db
+*.ffs_gui
