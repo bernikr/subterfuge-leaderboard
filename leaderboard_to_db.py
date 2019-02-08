@@ -97,7 +97,7 @@ class PlayerStats(Base):
 
     player = relationship(Player)
 
-    UniqueConstraint(player_id, elo, gold, silver, bronze, ratedgames, totalgames, finished, resigned)
+    UniqueConstraint(player_id, totalgames)
 
 
 if __name__ == '__main__':
