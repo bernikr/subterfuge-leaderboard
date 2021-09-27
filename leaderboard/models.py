@@ -11,6 +11,7 @@ class LeaderboardEntry(models.Model):
 
     timestamp = models.DateTimeField()
 
+    rank = models.IntegerField()
     elo = models.IntegerField()
     gold = models.IntegerField()
     silver = models.IntegerField()
@@ -20,3 +21,9 @@ class LeaderboardEntry(models.Model):
     finished = models.IntegerField()
     eliminated = models.IntegerField()
     resigned = models.IntegerField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['player', 'timestamp'], name='single player at time'),
+            models.UniqueConstraint(fields=['rank', 'timestamp'], name='single rank at time'),
+        ]

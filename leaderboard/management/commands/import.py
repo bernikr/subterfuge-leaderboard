@@ -58,9 +58,10 @@ def import_file(file):
         if new:
             player.save()
 
-        LeaderboardEntry(
+        new_entry = LeaderboardEntry(
             player=player,
             timestamp=time,
+            rank=str_to_int(r[0]),
             elo=str_to_int(r[2]),
             gold=str_to_int(r[3]),
             silver=str_to_int(r[4]),
@@ -70,4 +71,11 @@ def import_file(file):
             finished=str_to_int(r[8]),
             eliminated=str_to_int(r[9]),
             resigned=str_to_int(r[10])
-        ).save()
+        )
+
+        try:
+            prev_entry = player.leaderboardentry_set.latest('timestamp')
+            if prev_entry.totalgames != new_entry.totalgames or prev_entry.rank != new_entry.rank:
+                new_entry.save()
+        except LeaderboardEntry.DoesNotExist:
+            new_entry.save()
