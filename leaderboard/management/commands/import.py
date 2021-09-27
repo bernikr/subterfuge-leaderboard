@@ -6,7 +6,7 @@ import lxml.html as lh
 from django.core.management import BaseCommand
 from django.db import transaction
 
-from leaderboard.models import Player, LeaderboardEntry
+from leaderboard.models import Player, LeaderboardEntry, SourceFile
 
 filename_pattern = re.compile(r"^leaderboard_\d{8}_\d{6}[^.]*.html$")
 updated_pattern = re.compile(r"^Leaderboard updated on \w*, ([^.]*).$")
@@ -20,7 +20,8 @@ class Command(BaseCommand):
 
 
 def import_files(path):
-    files = [f for f in os.listdir(path) if filename_pattern.match(f)]
+    already_imported_files = {a[0] for a in SourceFile.objects.values_list('filename')}
+    files = [f for f in os.listdir(path) if filename_pattern.match(f) and f not in already_imported_files]
     files.sort()
     num = len(files)
     for i, f in enumerate(files):
@@ -39,6 +40,13 @@ def str_to_int(s):
 
 @transaction.atomic
 def import_file(file):
+    filename = os.path.basename(file)
+    sourcefile, new = SourceFile.objects.get_or_create(filename=filename)
+    if not new:
+        print(f"File '{filename}' was already imported, skipping")
+        return
+    sourcefile.save()
+
     page = lh.parse(file)
 
     time = next(p.groups()[0] for p in
@@ -60,6 +68,7 @@ def import_file(file):
 
         new_entry = LeaderboardEntry(
             player=player,
+            source_file=sourcefile,
             timestamp=time,
             rank=str_to_int(r[0]),
             elo=str_to_int(r[2]),
@@ -74,7 +83,7 @@ def import_file(file):
         )
 
         try:
-            prev_entry = player.leaderboardentry_set.latest('timestamp')
+            prev_entry = player.leaderboardentry_set.filter(timestamp__lt=new_entry.timestamp).latest('timestamp')
             if prev_entry.totalgames != new_entry.totalgames or prev_entry.rank != new_entry.rank:
                 new_entry.save()
         except LeaderboardEntry.DoesNotExist:

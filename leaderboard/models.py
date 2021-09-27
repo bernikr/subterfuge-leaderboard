@@ -1,16 +1,29 @@
 from django.db import models
 
 
+class SourceFile(models.Model):
+    filename = models.CharField(max_length=255, null=False, blank=False, unique=True)
+
+    def __str__(self):
+        return self.filename
+
+
 class Player(models.Model):
-    name = models.TextField(null=False, blank=False, unique=True)
+    name = models.CharField(max_length=255, null=False, blank=False)
     joined = models.DateField(null=False)
 
     def __str__(self):
         return self.name
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'joined'], name='no duplicates'),
+        ]
+
 
 class LeaderboardEntry(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    source_file = models.ForeignKey(SourceFile, null=True, on_delete=models.SET_NULL)
 
     timestamp = models.DateTimeField()
 
