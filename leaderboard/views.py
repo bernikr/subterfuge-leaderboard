@@ -12,12 +12,12 @@ def index(request, page=1):
     last_page = int((get_number_of_entries() - 1) / 100) + 1
 
     pagination = [
-                     ("First", 1, "disabled" if page == 1 else ""),
-                     ("Previous", page - 1, "disabled" if page == 1 else ""),
-                 ] + [(str(p), p, "active" if p == page else "") for p in
+                     ("First", "/1", "disabled" if page == 1 else ""),
+                     ("Previous", f"/{page - 1}", "disabled" if page == 1 else ""),
+                 ] + [(str(p), f"/{p}", "active" if p == page else "") for p in
                       range(max(1, page - 3), min(last_page, page + 3) + 1)] + [
-                     ("Next", page + 1, "disabled" if page == last_page else ""),
-                     ("Last", last_page, "disabled" if page == last_page else ""),
+                     ("Next", f"/{page + 1}", "disabled" if page == last_page else ""),
+                     ("Last", f"/{last_page}", "disabled" if page == last_page else ""),
                  ]
     print(pagination)
     return render(request, "index.html", {

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% include "pagination.html" %}
 <table class="table">
     <thead>
     <tr>
@@ -35,11 +36,5 @@
     {% endfor %}
     </tbody>
 </table>
-<nav aria-label="Page navigation example">
-    <ul class="pagination">
-        {% for n, p, c in pagination %}
-        <li class="page-item {{c}}"><a class="page-link" href="/{{p}}">{{n}}</a></li>
-        {% endfor %}
-    </ul>
-</nav>
+{% include "pagination.html" %}
 {% endblock %}
