@@ -21,3 +21,5 @@ subterfuge.db
 *.ffs_gui
 .idea/
 *.iml
+db.sqlite3
+leaderboard/__pycache__/
