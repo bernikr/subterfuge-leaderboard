@@ -1,15 +1,13 @@
 #!/bin/sh
 
-mkdir ~/.ssh
-ssh-keyscan github.com >> ~/.ssh/known_hosts
 git remote set-url origin https://github.com/bernikr/subterfuge-leaderboard.git
 git fetch
 git reset --hard origin/master
 
 pip install -r requirements.txt
 
-python manage.py collectstatic
-python manage.py migrate
+python manage.py collectstatic --noinput
+python manage.py migrate --noinput
 
 printenv | sed 's/^\(.*\)$/export \1/g' > /root/project_env.sh
 chmod u+x /root/project_env.sh
