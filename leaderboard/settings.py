@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
-PROD = os.environ.get("PRDO", "False") == "True"
+PROD = os.environ.get("PROD", "False") == "True"
 
 SECRET_KEY = os.environ.get("SECRET", "AAAA")
 DEBUG = os.environ.get("DEBUG", "True") == "True"
