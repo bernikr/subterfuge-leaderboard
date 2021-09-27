@@ -4,7 +4,8 @@ mkdir ~/.ssh
 ssh-keyscan github.com >> ~/.ssh/known_hosts
 git pull https://github.com/bernikr/subterfuge-leaderboard.git master
 
-python3 manage.py migrate
+python manage.py collectstatic
+python manage.py migrate
 
 printenv | sed 's/^\(.*\)$/export \1/g' > /root/project_env.sh
 chmod u+x /root/project_env.sh
