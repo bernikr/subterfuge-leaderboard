@@ -4,6 +4,8 @@ mkdir ~/.ssh
 ssh-keyscan github.com >> ~/.ssh/known_hosts
 git pull https://github.com/bernikr/subterfuge-leaderboard.git master
 
+pip install -r requirements.txt
+
 python manage.py collectstatic
 python manage.py migrate
 
