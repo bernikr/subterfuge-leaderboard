@@ -66,10 +66,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 xAxis: {
                     type: "time",
                     time: {
-                        unit: "day",
-                        parser: (t) => {
-                            console.log(t);
-                            return t;
+                        unit: "month",
+                        displayFormats: {
+                            day: 'D MMM YYYY'
                         }
                     }
                 },
