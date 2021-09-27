@@ -14,18 +14,19 @@ def index(request, page=1):
     last_page = int((max_rank - 1) / 100) + 1
 
     pagination = [
-                     ("First", "/1", "disabled" if page == 1 else ""),
-                     ("Previous", f"/{page - 1}", "disabled" if page == 1 else ""),
-                 ] + [(str(p), f"/{p}", "active" if p == page else "") for p in
-                      range(max(1, page - 3), min(last_page, page + 3) + 1)] + [
-                     ("Next", f"/{page + 1}", "disabled" if page == last_page else ""),
+                     ("First", "/1", "disabled " if page == 1 else ""),
+                     ("Previous", f"/{page - 1}", ("disabled " if page == 1 else "") + "d-none d-sm-table-cell"),
+                 ] + [(str(p), f"/{p}",
+                       ("active " if p == page else "") + ("d-none d-sm-table-cell" if p < page - 2 or p > page + 2 else ""))
+                      for p in range(max(1, page - 3), min(last_page, page + 3) + 1)] + [
+                     ("Next", f"/{page + 1}", ("disabled " if page == last_page else "") + "d-none d-sm-table-cell"),
                      ("Last", f"/{last_page}", "disabled" if page == last_page else ""),
                  ]
 
     update_time = LeaderboardEntry.objects.aggregate(Max('timestamp'))['timestamp__max']
     return render(request, "index.html", {
         "update_time": update_time,
-        "entries": entries,
+        "leaderboard_entries": entries,
         "pagination": pagination,
     })
 

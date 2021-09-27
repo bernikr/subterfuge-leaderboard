@@ -2,40 +2,7 @@
 
 {% block content %}
 {% include "pagination.html" %}
-<table class="table table-hover">
-    <thead>
-    <tr>
-        <th scope="col">#</th>
-        <th scope="col">Player</th>
-        <th scope="col">Rating</th>
-        <th scope="col">Gold</th>
-        <th scope="col">Silver</th>
-        <th scope="col">Bronze</th>
-        <th scope="col">Rated Games</th>
-        <th scope="col">Total Games</th>
-        <th scope="col">Finished</th>
-        <th scope="col">Eliminated</th>
-        <th scope="col">Resigned</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for e in entries %}
-    <tr>
-        <th scope="row">{{ e.rank }}</th>
-        <td><a href="{% url 'player' e.player.name %}">{{ e.player.name }}</a></td>
-        <td>{{ e.elo }}</td>
-        <td>{{ e.gold }}</td>
-        <td>{{ e.silver }}</td>
-        <td>{{ e.bronze }}</td>
-        <td>{{ e.ratedgames }}</td>
-        <td>{{ e.totalgames }}</td>
-        <td>{{ e.finished }}%</td>
-        <td>{{ e.eliminated }}%</td>
-        <td>{{ e.resigned }}%</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+{% include "leaderboard.html" %}
 {% include "pagination.html" %}
 <p>Last Update: {{update_time}}</p>
 {% endblock %}
