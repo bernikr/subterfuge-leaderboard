@@ -2,7 +2,9 @@
 
 mkdir ~/.ssh
 ssh-keyscan github.com >> ~/.ssh/known_hosts
-git pull https://github.com/bernikr/subterfuge-leaderboard.git master
+git remote set-url origin https://github.com/bernikr/subterfuge-leaderboard.git
+git fetch
+git reset --hard origin/master
 
 pip install -r requirements.txt
 
