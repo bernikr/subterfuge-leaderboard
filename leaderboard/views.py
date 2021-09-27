@@ -65,3 +65,7 @@ def player(request, name, id=None):
         "leaderboard_entries": get_current_leaderboard(current_stats.rank-3, 7),
         "stats": list(player.leaderboardentry_set.order_by("timestamp").values()),
     })
+
+
+def about(request):
+    return render(request, "about.html")

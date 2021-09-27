@@ -12,7 +12,7 @@ PROD = os.environ.get("PROD", "False") == "True"
 
 SECRET_KEY = os.environ.get("SECRET", "AAAA")
 DEBUG = os.environ.get("DEBUG", "True") == "True"
-ALLOWED_HOSTS = os.environ.get("HOSTS", "").split(" ")
+ALLOWED_HOSTS = os.environ.get("HOSTS", "localhost").split(" ")
 
 
 # Application definition

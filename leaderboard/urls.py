@@ -13,4 +13,6 @@ urlpatterns = [
 
     path('player/<str:name>', views.player, name='player'),
     path('player/<str:name>/<int:id>', views.player, name='player_by_id'),
+
+    path('about', views.about, name='about'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
