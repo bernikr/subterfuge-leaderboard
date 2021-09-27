@@ -2,7 +2,7 @@
 
 {% block content %}
 {% include "pagination.html" %}
-<table class="table">
+<table class="table table-hover">
     <thead>
     <tr>
         <th scope="col">#</th>
@@ -37,4 +37,5 @@
     </tbody>
 </table>
 {% include "pagination.html" %}
+<p>Last Update: {{update_time}}</p>
 {% endblock %}

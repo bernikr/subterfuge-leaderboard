@@ -10,7 +10,8 @@ PAGE_SIZE = 100
 def index(request, page=1):
     entries = get_current_leaderboard(1 + (page - 1) * PAGE_SIZE, PAGE_SIZE)
 
-    last_page = int((get_number_of_entries() - 1) / 100) + 1
+    max_rank = LeaderboardEntry.objects.aggregate(Max('rank'))['rank__max']
+    last_page = int((max_rank - 1) / 100) + 1
 
     pagination = [
                      ("First", "/1", "disabled" if page == 1 else ""),
@@ -20,7 +21,10 @@ def index(request, page=1):
                      ("Next", f"/{page + 1}", "disabled" if page == last_page else ""),
                      ("Last", f"/{last_page}", "disabled" if page == last_page else ""),
                  ]
+
+    update_time = LeaderboardEntry.objects.aggregate(Max('timestamp'))['timestamp__max']
     return render(request, "index.html", {
+        "update_time": update_time,
         "entries": entries,
         "pagination": pagination,
     })
@@ -37,10 +41,6 @@ def get_current_leaderboard(rank_from, num=100):
     return LeaderboardEntry.objects.filter(params)
 
 
-def get_number_of_entries():
-    return LeaderboardEntry.objects.aggregate(Max('rank'))['rank__max']
-
-
 def player(request, name, id=None):
     if id is None:
         res = Player.objects.filter(name=name)
@@ -55,4 +55,11 @@ def player(request, name, id=None):
     if player is None:
         raise Http404()
 
-    return render(request, "player.html", {"player": player})
+    current_stats = player.leaderboardentry_set.latest("timestamp")
+
+    return render(request, "player.html", {
+        "player": player,
+        "current_stats": current_stats,
+        "leaderboard_entries": get_current_leaderboard(current_stats.rank-3, 7),
+        "stats": list(player.leaderboardentry_set.order_by("timestamp").values()),
+    })

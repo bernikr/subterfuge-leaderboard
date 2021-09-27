@@ -3,9 +3,138 @@
 {% block title %}{{ player.name }} - {% endblock %}
 
 {% block content %}
-{{ player.joined }}
-
-{% for e in player.leaderboardentry_set.all %}
-{{e.rank}}
-{% endfor %}
+<h1>{{ player.name }}</h1>
+<div class="row">
+    <div class="col-md-4 order-md-2">
+        <p>
+            Joined: {{ player.joined }} <br/>
+            Current Rank: <b>{{ current_stats.rank }}</b><br/>
+            Rating: <b>{{ current_stats.elo }}</b><br/>
+            Medals:
+            {{ current_stats.gold }}<i class="bi bi-award-fill" title="Gold" style="color: gold"></i>
+            {{ current_stats.silver }}<i class="bi bi-award-fill" title="Silver" style="color: silver"></i>
+            {{ current_stats.bronze }}<i class="bi bi-award-fill" title="Bronze" style="color: #CD7F32"></i><br/>
+            {{ current_stats.totalgames }} Games played ({{ current_stats.ratedgames }} rated)
+        </p>
+        <p class="chart-container" style="position: relative; width:150px">
+            <canvas id="outcome_chart"></canvas>
+        </p>
+        <p>Last change: {{ current_stats.timestamp }}</p>
+    </div>
+    <div class="col-md-8 order-md-1">
+        <canvas id="main_chart"></canvas>
+    </div>
+</div>
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Player</th>
+        <th scope="col">Rating</th>
+        <th scope="col">Gold</th>
+        <th scope="col">Silver</th>
+        <th scope="col">Bronze</th>
+        <th scope="col" class="d-none d-md-table-cell">Rated Games</th>
+        <th scope="col" class="d-none d-md-table-cell">Total Games</th>
+        <th scope="col" class="d-none d-xl-table-cell">Finished</th>
+        <th scope="col" class="d-none d-xl-table-cell">Eliminated</th>
+        <th scope="col" class="d-none d-xl-table-cell">Resigned</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for e in leaderboard_entries %}
+    <tr class="{% if e.player == player %}table-active{% endif %}">
+        <th scope="row">{{ e.rank }}</th>
+        <td><a href="{% url 'player' e.player.name %}">{{ e.player.name }}</a></td>
+        <td>{{ e.elo }}</td>
+        <td>{{ e.gold }}</td>
+        <td>{{ e.silver }}</td>
+        <td>{{ e.bronze }}</td>
+        <td class="d-none d-md-table-cell">{{ e.ratedgames }}</td>
+        <td class="d-none d-md-table-cell">{{ e.totalgames }}</td>
+        <td class="d-none d-xl-table-cell">{{ e.finished }}%</td>
+        <td class="d-none d-xl-table-cell">{{ e.eliminated }}%</td>
+        <td class="d-none d-xl-table-cell">{{ e.resigned }}%</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<script src="https://cdn.jsdelivr.net/npm/moment"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.1.1/chartjs-plugin-zoom.min.js" integrity="sha512-NxlWEbNbTV6acWnTsWRLIiwzOw0IwHQOYUCKBiu/NqZ+5jSy7gjMbpYI+/4KvaNuZ1qolbw+Vnd76pbIUYEG8g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{{ stats | json_script:"data" }}
+<script>
+    let outcome_data = [{{current_stats.finished}},{{current_stats.eliminated}},{{current_stats.resigned}}];
+    new Chart(document.getElementById('outcome_chart'), {
+        type: 'doughnut',
+        data: {
+            labels: [
+                'Finished',
+                'Eliminated',
+                'Resigned'
+            ],
+            datasets: [{
+                label: 'Game Outcomes',
+                data: outcome_data,
+                backgroundColor: [
+                    'green',
+                    'red',
+                    'yellow'
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => context.label + ": " + context.formattedValue + "%",
+                    }
+                }
+            }
+        }
+    });
+    let data = JSON.parse(document.getElementById('data').textContent);
+    var chart = new Chart(document.getElementById('main_chart'), {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: "Rating",
+                data: data,
+            }]
+        },
+        options: {
+            parsing: {
+                xAxisKey: 'timestamp',
+                yAxisKey: 'elo'
+            },
+            scales: {
+                x: {
+                    type: "time",
+                    time: {
+                        unit: "day",
+                        parser: (t) => {
+                            console.log(t);
+                            return t;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                zoom: {
+                    zoom: {
+                        drag: {
+                            enabled: true
+                        },
+                        mode: 'x',
+                    },
+                },
+            },
+        }
+    });
+</script>
 {% endblock %}
