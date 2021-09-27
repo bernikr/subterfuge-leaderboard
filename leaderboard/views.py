@@ -1,7 +1,8 @@
 from django.db.models import Max, Q
+from django.http import HttpResponseNotFound, Http404
 from django.shortcuts import render
 
-from leaderboard.models import LeaderboardEntry
+from leaderboard.models import LeaderboardEntry, Player
 
 PAGE_SIZE = 100
 
@@ -19,7 +20,6 @@ def index(request, page=1):
                      ("Next", f"/{page + 1}", "disabled" if page == last_page else ""),
                      ("Last", f"/{last_page}", "disabled" if page == last_page else ""),
                  ]
-    print(pagination)
     return render(request, "index.html", {
         "entries": entries,
         "pagination": pagination,
@@ -39,3 +39,20 @@ def get_current_leaderboard(rank_from, num=100):
 
 def get_number_of_entries():
     return LeaderboardEntry.objects.aggregate(Max('rank'))['rank__max']
+
+
+def player(request, name, id=None):
+    if id is None:
+        res = Player.objects.filter(name=name)
+        if res.count() > 1:
+            #TODO User selection
+            return HttpResponseNotFound("Multiple Players with this name")
+        else:
+            player = res.first()
+    else:
+        player = Player.objects.get(id=id, name=name)
+
+    if player is None:
+        raise Http404()
+
+    return render(request, "player.html", {"player": player})

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}{{ player.name }} - {% endblock %}
+
+{% block content %}
+{{ player.joined }}
+
+{% for e in player.leaderboardentry_set.all %}
+{{e.rank}}
+{% endfor %}
+{% endblock %}

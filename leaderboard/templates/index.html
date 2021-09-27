@@ -22,7 +22,7 @@
     {% for e in entries %}
     <tr>
         <th scope="row">{{ e.rank }}</th>
-        <td>{{ e.player.name }}</td>
+        <td><a href="{% url 'player' e.player.name %}">{{ e.player.name }}</a></td>
         <td>{{ e.elo }}</td>
         <td>{{ e.gold }}</td>
         <td>{{ e.silver }}</td>
