@@ -15,8 +15,11 @@ updated_pattern = re.compile(r"^Leaderboard updated on \w*, ([^.]*).$")
 class Command(BaseCommand):
     help = 'Import Leaderborad fles'
 
+    def add_arguments(self, parser):
+        parser.add_argument('path', type=str)
+
     def handle(self, *args, **options):
-        import_files(r"\\homecloud.lan\docker\subterfuge-leaderboards")
+        import_files(options['path'])
 
 
 def import_files(path):
