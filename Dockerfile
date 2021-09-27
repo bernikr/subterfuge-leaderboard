@@ -5,11 +5,11 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install dependencies
+RUN apt-get -y update && apt-get install -y cron
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 # copy sourcecode and compiled frontend
 COPY . .
 
-ENTRYPOINT ["/usr/src/entrypoint.sh"]
-CMD ["gunicorn", "leaderboard.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["/usr/src/entrypoint.sh"]
