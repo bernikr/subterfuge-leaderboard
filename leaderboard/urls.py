@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 
@@ -11,4 +13,4 @@ urlpatterns = [
 
     path('player/<str:name>', views.player, name='player'),
     path('player/<str:name>/<int:id>', views.player, name='player_by_id'),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

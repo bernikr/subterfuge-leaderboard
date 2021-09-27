@@ -1,4 +1,5 @@
 from django.db.models import Max, Q
+from django.forms import model_to_dict
 from django.http import HttpResponseNotFound, Http404
 from django.shortcuts import render
 
@@ -60,7 +61,7 @@ def player(request, name, id=None):
 
     return render(request, "player.html", {
         "player": player,
-        "current_stats": current_stats,
+        "current_stats": model_to_dict(current_stats),
         "leaderboard_entries": get_current_leaderboard(current_stats.rank-3, 7),
         "stats": list(player.leaderboardentry_set.order_by("timestamp").values()),
     })
