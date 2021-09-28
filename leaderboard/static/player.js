@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 xAxis: {
                     type: "time",
                     time: {
-                        unit: "month",
+                        unit: "day",
                         displayFormats: {
                             day: 'D MMM YYYY'
                         }
@@ -92,5 +92,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
             },
         }
+    });
+    document.getElementById("button-month").addEventListener("click", function() {
+        chart.zoomScale('xAxis', {min: moment().subtract(1, 'month'), max: moment()}, 'default');
+    });
+    document.getElementById("button-year").addEventListener("click", function() {
+        chart.zoomScale('xAxis', {min: moment().subtract(1, 'year'), max: moment()}, 'default');
+    });
+    document.getElementById("button-all").addEventListener("click", function() {
+        chart.resetZoom();
     });
 });
