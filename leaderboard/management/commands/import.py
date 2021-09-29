@@ -5,6 +5,7 @@ from datetime import datetime
 import lxml.html as lh
 from django.core.management import BaseCommand
 from django.db import transaction
+from tqdm import tqdm
 
 from leaderboard.models import Player, LeaderboardEntry, SourceFile
 
@@ -59,7 +60,7 @@ def import_file(file):
     time = datetime.strptime(time, '%d %b %y %H:%M:%S %z')
 
     rows = page.xpath("//table/tr")
-    for row in rows[1:]:
+    for row in tqdm(rows[1:]):
         r = [c.text_content() for c in row.xpath("./td")]
 
         playername = r[1]
