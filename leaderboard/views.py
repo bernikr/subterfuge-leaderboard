@@ -3,15 +3,14 @@ from django.forms import model_to_dict
 from django.http import HttpResponseNotFound, Http404
 from django.shortcuts import render
 
-from leaderboard.models import LeaderboardEntry, Player
+from leaderboard.models import LeaderboardEntry, Player, Leaderboard
 
 PAGE_SIZE = 100
 
 
 def index(request, page=1):
-    entries = get_current_leaderboard(1 + (page - 1) * PAGE_SIZE, PAGE_SIZE)
-
-    max_rank = LeaderboardEntry.objects.aggregate(Max('rank'))['rank__max']
+    current_leaderboard = Leaderboard.objects.latest('timestamp')
+    max_rank = current_leaderboard.entries.aggregate(Max('rank'))['rank__max']
     last_page = int((max_rank - 1) / 100) + 1
 
     pagination = [
@@ -24,23 +23,14 @@ def index(request, page=1):
                      ("Last", f"/{last_page}", "disabled" if page == last_page else ""),
                  ]
 
-    update_time = LeaderboardEntry.objects.aggregate(Max('timestamp'))['timestamp__max']
+    rank_from = 1 + (page - 1) * PAGE_SIZE
+    entries = current_leaderboard.entries.filter(rank__gte=rank_from, rank__lt=rank_from + PAGE_SIZE)
+    update_time = current_leaderboard.timestamp
     return render(request, "index.html", {
         "update_time": update_time,
         "leaderboard_entries": entries,
         "pagination": pagination,
     })
-
-
-def get_current_leaderboard(rank_from, num=100):
-    group_dict = LeaderboardEntry.objects.filter(rank__gte=rank_from, rank__lt=rank_from + num) \
-        .values('rank').annotate(newest=Max('timestamp'))
-
-    params = Q()
-    for obj in group_dict:
-        params |= (Q(rank=obj['rank']) & Q(timestamp=obj['newest']))
-
-    return LeaderboardEntry.objects.filter(params)
 
 
 def player(request, name, id=None):
@@ -57,13 +47,17 @@ def player(request, name, id=None):
     if player is None:
         raise Http404()
 
-    current_stats = player.leaderboardentry_set.latest("timestamp")
+    current_leaderboard = Leaderboard.objects.latest('timestamp')
+    current_stats = current_leaderboard.entries.get(player=player)
 
+    leaderboard_around = current_leaderboard.entries\
+        .filter(rank__gte=current_stats.rank-3, rank__lt=current_stats.rank+4)
     return render(request, "player.html", {
         "player": player,
         "current_stats": model_to_dict(current_stats),
-        "leaderboard_entries": get_current_leaderboard(current_stats.rank-3, 7),
-        "stats": list(player.leaderboardentry_set.order_by("timestamp").values()),
+        "leaderboard_entries": leaderboard_around,
+        "stats": [{"timestamp": e.timestamp, "elo": e.elo, "rank": e.rank}
+                  for e in player.entries.order_by("leaderboard__timestamp").all()]
     })
 
 

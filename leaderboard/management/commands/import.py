@@ -7,7 +7,7 @@ from django.core.management import BaseCommand
 from django.db import transaction
 from tqdm import tqdm
 
-from leaderboard.models import Player, LeaderboardEntry, SourceFile
+from leaderboard.models import Player, LeaderboardEntry, Leaderboard
 
 filename_pattern = re.compile(r"^leaderboard_\d{8}_\d{6}[^.]*.html$")
 updated_pattern = re.compile(r"^Leaderboard updated on \w*, ([^.]*).$")
@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
 
 def import_files(path):
-    already_imported_files = {a[0] for a in SourceFile.objects.values_list('filename')}
+    already_imported_files = {a[0] for a in Leaderboard.objects.values_list('filename')}
     files = [f for f in os.listdir(path) if filename_pattern.match(f) and f not in already_imported_files]
     files.sort()
     num = len(files)
@@ -45,11 +45,9 @@ def str_to_int(s):
 @transaction.atomic
 def import_file(file):
     filename = os.path.basename(file)
-    sourcefile, new = SourceFile.objects.get_or_create(filename=filename)
-    if not new:
+    if Leaderboard.objects.filter(filename=filename).exists():
         print(f"File '{filename}' was already imported, skipping")
         return
-    sourcefile.save()
 
     page = lh.parse(file)
 
@@ -58,6 +56,9 @@ def import_file(file):
                  (p.text_content() for p in page.xpath("//p"))
                  ) if p is not None)
     time = datetime.strptime(time, '%d %b %y %H:%M:%S %z')
+
+    leaderboard = Leaderboard(filename=filename, timestamp=time)
+    leaderboard.save()
 
     rows = page.xpath("//table/tr")
     for row in tqdm(rows[1:]):
@@ -70,10 +71,9 @@ def import_file(file):
         if new:
             player.save()
 
-        new_entry = LeaderboardEntry(
+        LeaderboardEntry(
             player=player,
-            source_file=sourcefile,
-            timestamp=time,
+            leaderboard=leaderboard,
             rank=str_to_int(r[0]),
             elo=str_to_int(r[2]),
             gold=str_to_int(r[3]),
@@ -84,11 +84,4 @@ def import_file(file):
             finished=str_to_int(r[8]),
             eliminated=str_to_int(r[9]),
             resigned=str_to_int(r[10])
-        )
-
-        try:
-            prev_entry = player.leaderboardentry_set.filter(timestamp__lt=new_entry.timestamp).latest('timestamp')
-            if prev_entry.totalgames != new_entry.totalgames or prev_entry.rank != new_entry.rank:
-                new_entry.save()
-        except LeaderboardEntry.DoesNotExist:
-            new_entry.save()
+        ).save()
