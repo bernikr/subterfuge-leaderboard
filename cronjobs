@@ -1,2 +1,2 @@
-0 1 * * * root . /root/project_env.sh; python /usr/src/manage.py import /data/html >> /var/log/cron.log
+0 1 * * * root . /root/project_env.sh; python /usr/src/manage.py import /data/import >> /var/log/cron.log
 # empty line
