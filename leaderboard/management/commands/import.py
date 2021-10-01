@@ -1,15 +1,17 @@
+import csv
 import os
 import re
 from datetime import datetime
 
 import lxml.html as lh
+import pytz
 from django.core.management import BaseCommand
 from django.db import transaction
 from tqdm import tqdm
 
 from leaderboard.models import Player, LeaderboardEntry, Leaderboard
 
-filename_pattern = re.compile(r"^leaderboard_\d{8}_\d{6}[^.]*.html$")
+filename_pattern = re.compile(r"^leaderboard_\d{8}_\d{6}[^.]*.(html|1\.csv)$")
 updated_pattern = re.compile(r"^Leaderboard updated on \w*, ([^.]*).$")
 
 
@@ -48,6 +50,16 @@ def import_file(file):
     if Leaderboard.objects.filter(filename=filename).exists():
         print(f"File '{filename}' was already imported, skipping")
         return
+    ext = filename_pattern.match(filename).group(1)
+
+    {
+        'html': import_html,
+        '1.csv': import_csv_1,
+    }.get(ext)(file)
+
+
+def import_html(file):
+    filename = os.path.basename(file)
 
     page = lh.parse(file)
 
@@ -63,25 +75,44 @@ def import_file(file):
     rows = page.xpath("//table/tr")
     for row in tqdm(rows[1:]):
         r = [c.text_content() for c in row.xpath("./td")]
+        save_leaderboard_row(r, leaderboard)
 
-        playername = r[1]
-        joined_date = datetime.strptime(r[11], "%d %b %Y").date()
 
-        player, new = Player.objects.get_or_create(name=playername, joined=joined_date)
-        if new:
-            player.save()
+def import_csv_1(file):
+    filename = os.path.basename(file)
 
-        LeaderboardEntry(
-            player=player,
-            leaderboard=leaderboard,
-            rank=str_to_int(r[0]),
-            elo=str_to_int(r[2]),
-            gold=str_to_int(r[3]),
-            silver=str_to_int(r[4]),
-            bronze=str_to_int(r[5]),
-            ratedgames=str_to_int(r[6]),
-            totalgames=str_to_int(r[7]),
-            finished=str_to_int(r[8]),
-            eliminated=str_to_int(r[9]),
-            resigned=str_to_int(r[10])
-        ).save()
+    with open(file) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        leaderboard = None
+        for i, r in tqdm(enumerate(csv_reader)):
+            if i == 0:
+                continue
+            elif i == 1:
+                time = datetime.strptime(f"{r[12]} {r[13]}", '%d %b %Y %H:%M').replace(tzinfo=pytz.UTC)
+                leaderboard = Leaderboard(filename=filename, timestamp=time)
+                leaderboard.save()
+            save_leaderboard_row(r, leaderboard)
+
+
+def save_leaderboard_row(r, leaderboard):
+    playername = r[1]
+    joined_date = datetime.strptime(r[11], "%d %b %Y").date()
+
+    player, new = Player.objects.get_or_create(name=playername, joined=joined_date)
+    if new:
+        player.save()
+
+    LeaderboardEntry(
+        player=player,
+        leaderboard=leaderboard,
+        rank=str_to_int(r[0]),
+        elo=str_to_int(r[2]),
+        gold=str_to_int(r[3]),
+        silver=str_to_int(r[4]),
+        bronze=str_to_int(r[5]),
+        ratedgames=str_to_int(r[6]),
+        totalgames=str_to_int(r[7]),
+        finished=str_to_int(r[8]),
+        eliminated=str_to_int(r[9]),
+        resigned=str_to_int(r[10])
+    ).save()
