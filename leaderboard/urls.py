@@ -14,5 +14,7 @@ urlpatterns = [
     path('player/<str:name>', views.player, name='player'),
     path('player/<str:name>/<int:id>', views.player, name='player_by_id'),
 
+    path('api/search/<str:search>', views.api_search_player, name='search_player'),
+
     path('about', views.about, name='about'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

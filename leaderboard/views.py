@@ -1,6 +1,6 @@
 from django.db.models import Max, Q
 from django.forms import model_to_dict
-from django.http import HttpResponseNotFound, Http404
+from django.http import HttpResponseNotFound, Http404, JsonResponse
 from django.shortcuts import render
 
 from leaderboard.models import LeaderboardEntry, Player, Leaderboard
@@ -63,3 +63,9 @@ def player(request, name, id=None):
 
 def about(request):
     return render(request, "about.html")
+
+
+def api_search_player(request, search):
+    res = Player.objects.filter(name__icontains=search).values_list('name')[:100]
+    res = [i[0] for i in res]
+    return JsonResponse({"res": res})
