@@ -45,7 +45,10 @@ def player(request, name, id=None):
         player = Player.objects.get(id=id, name=name)
 
     if player is None:
-        raise Http404()
+        return render(request, "search_results.html", {
+            "results": Player.objects.filter(name__icontains=name).order_by('name'),
+            "name": name,
+        })
 
     current_leaderboard = Leaderboard.objects.latest('timestamp')
     current_stats = current_leaderboard.entries.get(player=player)
