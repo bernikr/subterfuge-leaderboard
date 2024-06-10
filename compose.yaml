@@ -15,7 +15,7 @@ services:
       - DB_HOST=db
       - DB_NAME=subterfuge
     volumes:
-      - ../subterfuge-leaderboards:/data/import
+      - ./archive:/data/import:ro
     labels:
       - traefik.enable=true
       - traefik.http.routers.subterfuge.rule=Host(`subterfuge.kralofsky.com`)
@@ -31,6 +31,13 @@ services:
       - POSTGRES_DB=subterfuge
     volumes:
       - ./db:/var/lib/postgresql/data
+  downloader:
+    build: ./downloader
+    restart: always
+    networks:
+      - internal
+    volumes:
+      - ./archive:/data:rw
 networks:
   internal:
   proxy:

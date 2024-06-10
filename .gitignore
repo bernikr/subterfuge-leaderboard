@@ -1,6 +1,4 @@
 .env
-data/*
-!data/.empty
 .idea/
-db/**
-!db/.empty
+db/
+archive/
