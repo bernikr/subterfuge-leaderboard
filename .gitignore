@@ -1,6 +1,6 @@
+.env
+data/*
+!data/.empty
 .idea/
-*.iml
-
-db.sqlite3
-
-__pycache__/
+db/**
+!db/.empty

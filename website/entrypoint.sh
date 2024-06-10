@@ -1,11 +1,5 @@
 #!/bin/sh
 
-git remote set-url origin https://github.com/bernikr/subterfuge-leaderboard.git
-git fetch
-git reset --hard origin/master
-
-pip install -r requirements.txt
-
 python manage.py collectstatic --no-input
 python manage.py migrate --no-input
 
