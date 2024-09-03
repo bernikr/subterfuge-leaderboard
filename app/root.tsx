@@ -5,7 +5,9 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-import "./tailwind.css";
+import Navbar from "./navbar";
+import "bootstrap/dist/css/bootstrap.css";
+import { Container } from "react-bootstrap";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -17,7 +19,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <Navbar />
+        <Container>{children}</Container>
         <ScrollRestoration />
         <Scripts />
       </body>
