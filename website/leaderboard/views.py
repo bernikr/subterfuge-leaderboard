@@ -25,7 +25,7 @@ def index(request, page=1):
                  ]
 
     rank_from = 1 + (page - 1) * PAGE_SIZE
-    entries = current_leaderboard.entries.filter(rank__gte=rank_from, rank__lt=rank_from + PAGE_SIZE)
+    entries = current_leaderboard.entries.filter(rank__gte=rank_from, rank__lt=rank_from + PAGE_SIZE).order_by("rank")
     update_time = current_leaderboard.timestamp
     return render(request, "index.html", {
         "update_time": update_time,
@@ -55,7 +55,7 @@ def player(request, name, id=None):
     current_stats = current_leaderboard.entries.get(player=player)
 
     leaderboard_around = current_leaderboard.entries \
-        .filter(rank__gte=current_stats.rank - 3, rank__lt=current_stats.rank + 4)
+        .filter(rank__gte=current_stats.rank - 3, rank__lt=current_stats.rank + 4).order_by("rank")
     return render(request, "player.html", {
         "player": player,
         "current_stats": model_to_dict(current_stats),
