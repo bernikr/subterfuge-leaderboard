@@ -7,6 +7,9 @@ class Leaderboard(models.Model):
     filename = models.CharField(max_length=255, null=False, blank=False, unique=True)
     timestamp = models.DateTimeField()
 
+    class Meta:
+        indexes = [models.Index(fields=['-timestamp'])]
+
     def __str__(self):
         return self.filename
 
@@ -21,6 +24,9 @@ class Player(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['name', 'joined'], name='no duplicates'),
+        ]
+        indexes = [
+            models.Index(fields=['name']),
         ]
 
 
@@ -47,6 +53,10 @@ class LeaderboardEntry(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['player', 'leaderboard'], name='no duplicate players per leaderboard'),
             models.UniqueConstraint(fields=['rank', 'leaderboard'], name='no duplicate ranks per leaderboard'),
+        ]
+        indexes = [
+            models.Index(fields=['player', 'leaderboard']),
+            models.Index(fields=['leaderboard', '-rank']),
         ]
 
     def __str__(self):
