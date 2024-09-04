@@ -1,5 +1,4 @@
-import type { LoaderFunction, MetaFunction } from "@remix-run/cloudflare";
-import { json } from "@remix-run/cloudflare";
+import { json, LoaderFunctionArgs, MetaFunction } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import { PrismaD1 } from "@prisma/adapter-d1";
 import { PrismaClient } from "@prisma/client";
@@ -14,15 +13,24 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader: LoaderFunction = async ({ context }) => {
+export async function loader({ context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
-
   const adapter = new PrismaD1(env.DB);
   const prisma = new PrismaClient({ adapter });
 
-  const users = await prisma.user.findMany();
-  return json(users);
-};
+  const page = 1;
+  const page_size = 100;
+
+  const lb = await prisma.leaderboard.findFirst({
+    orderBy: { timestamp: "desc" },
+    include: {
+      entries: {
+        where: { rank: { gt: page_size * (page - 1), lte: page_size * page } },
+      },
+    },
+  });
+  return json(lb);
+}
 
 export default function Index() {
   const results = useLoaderData<typeof loader>();
