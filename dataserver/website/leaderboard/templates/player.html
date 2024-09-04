@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"
+        referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.1/chart.min.js"
+        integrity="sha512-Wt1bJGtlnMtGP0dqNFH1xlkLBNpEodaiQ8ZN5JLA5wpc1sUlk/O5uuOMNgvzddzkpvZ9GLyYNa8w2s7rqiTk5Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-moment/1.0.0/chartjs-adapter-moment.min.js"
+        integrity="sha512-oh5t+CdSBsaVVAvxcZKy3XJdP7ZbYUBSRCXDTVn0ODewMDDNnELsrG9eDm8rVZAQg7RsDD/8K3MjPAFB13o6eA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.1.1/chartjs-plugin-zoom.min.js"
+        integrity="sha512-NxlWEbNbTV6acWnTsWRLIiwzOw0IwHQOYUCKBiu/NqZ+5jSy7gjMbpYI+/4KvaNuZ1qolbw+Vnd76pbIUYEG8g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="{% static 'player.js' %}"></script>
+{{ stats | json_script:"data" }}
+{{ current_stats | json_script:"current_stats" }}
+{% endblock %}
+
+{% block title %}{{ player.name }} - {% endblock %}
+
+{% block content %}
+<h1>{{ player.name }}</h1>
+<div class="row">
+    <div class="col-md-4 order-md-2">
+        <p>
+            Joined: {{ player.joined }} <br/>
+            Current Rank: <b>{{ current_stats.rank }}</b><br/>
+            Rating: <b>{{ current_stats.elo }}</b><br/>
+            Medals:
+            {{ current_stats.gold }}<i class="bi bi-award-fill" title="Gold" style="color: gold"></i>
+            {{ current_stats.silver }}<i class="bi bi-award-fill" title="Silver" style="color: silver"></i>
+            {{ current_stats.bronze }}<i class="bi bi-award-fill" title="Bronze" style="color: #CD7F32"></i><br/>
+            {{ current_stats.totalgames }} Games played ({{ current_stats.ratedgames }} rated)
+        </p>
+        <p class="chart-container" style="position: relative; width:150px">
+            <canvas id="outcome_chart"></canvas>
+        </p>
+    </div>
+    <div class="col-md-8 order-md-1">
+        <div class="btn-group float-end" role="group" aria-label="Basic outlined example">
+            <button type="button" id="button-month" class="btn btn-outline-primary">Month</button>
+            <button type="button" id="button-year" class="btn btn-outline-primary">Year</button>
+            <button type="button" id="button-all" class="btn btn-outline-primary">All</button>
+        </div>
+        <canvas id="main_chart"></canvas>
+    </div>
+</div>
+{% include "partial/leaderboard.html" %}
+{% endblock %}

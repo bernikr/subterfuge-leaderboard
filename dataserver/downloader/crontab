@@ -1,0 +1,1 @@
+0 0 * * * curl http://subterfuge-game.com/leaderboards.html -o /data/leaderboard_$(date +%Y%m%d_%H%M%S).html
