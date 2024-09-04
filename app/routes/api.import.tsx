@@ -1,7 +1,6 @@
 import { ActionFunctionArgs, json } from "@remix-run/cloudflare";
 import { PrismaD1 } from "@prisma/adapter-d1";
-import { Prisma, PrismaClient } from "@prisma/client";
-import LeaderboardEntryCreateWithoutLeaderboardInput = Prisma.LeaderboardEntryCreateWithoutLeaderboardInput;
+import { PrismaClient } from "@prisma/client";
 
 type ApiImportLeaderboardEntry = {
   player_name: string;
@@ -39,45 +38,62 @@ export async function action({ request, context }: ActionFunctionArgs) {
   const input = await request.json<ApiImportLeaderboard>();
   const timestamp = new Date(Date.parse(input.timestamp));
 
-  await prisma.leaderboard.deleteMany({ where: { timestamp: timestamp } });
-  const res = await prisma.leaderboard.create({
-    data: {
-      timestamp: new Date(Date.parse(input.timestamp)),
-      entries: {
-        create: input.entries.map(
-          (e): LeaderboardEntryCreateWithoutLeaderboardInput => {
-            const player_joined = new Date(Date.parse(e.player_joined));
-            return {
-              rank: e.rank,
-              elo: e.elo,
-              gold: e.gold,
-              silver: e.silver,
-              bronze: e.bronze,
-              rated_games: e.rated_games,
-              total_games: e.total_games,
-              finished: e.finished,
-              eliminated: e.eliminated,
-              resigned: e.resigned,
-              player: {
-                connectOrCreate: {
-                  where: {
-                    name_joined: {
-                      name: e.player_name,
-                      joined: player_joined,
-                    },
-                  },
-                  create: {
-                    name: e.player_name,
-                    joined: player_joined,
-                  },
-                },
-              },
-            };
-          }
-        ),
-      },
+  const leaderboard = await prisma.leaderboard.upsert({
+    where: {
+      timestamp: timestamp,
+    },
+    update: {},
+    create: {
+      timestamp: timestamp,
     },
   });
 
-  return json({ success: true, res: res });
+  for (const e of input.entries) {
+    const player_joined = new Date(Date.parse(e.player_joined));
+
+    await prisma.leaderboardEntry.deleteMany({
+      where: {
+        AND: [
+          { leaderboardId: leaderboard.id },
+          { player: { name: e.player_name, joined: player_joined } },
+        ],
+      },
+    });
+
+    await prisma.leaderboardEntry.create({
+      data: {
+        rank: e.rank,
+        elo: e.elo,
+        gold: e.gold,
+        silver: e.silver,
+        bronze: e.bronze,
+        rated_games: e.rated_games,
+        total_games: e.total_games,
+        finished: e.finished,
+        eliminated: e.eliminated,
+        resigned: e.resigned,
+        leaderboard: {
+          connect: {
+            id: leaderboard.id,
+          },
+        },
+        player: {
+          connectOrCreate: {
+            where: {
+              name_joined: {
+                name: e.player_name,
+                joined: player_joined,
+              },
+            },
+            create: {
+              name: e.player_name,
+              joined: player_joined,
+            },
+          },
+        },
+      },
+    });
+  }
+
+  return json({ success: true });
 }
