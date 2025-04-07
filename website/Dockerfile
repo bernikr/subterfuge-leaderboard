@@ -15,6 +15,8 @@ COPY . .
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
 
+RUN chmod +x entrypoint.sh
+
 ENV PATH="/usr/src/.venv/bin:$PATH"
 
 CMD ["/usr/src/entrypoint.sh"]
