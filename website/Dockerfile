@@ -6,8 +6,6 @@ WORKDIR /usr/src
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
-# install dependencies
-RUN apt-get -y update && apt-get install -y cron
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=.python-version,target=.python-version \
     --mount=type=bind,source=uv.lock,target=uv.lock \
