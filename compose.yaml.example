@@ -1,12 +1,11 @@
 services:
   website:
     build: ./website
-    restart: unless-stopped
+    restart: always
+    ports:
+      - 8000:8000
     depends_on:
       - db
-    networks:
-      - internal
-      - proxy
     environment:
       - SECRET
       - HOSTS
@@ -16,15 +15,9 @@ services:
       - DB_NAME=subterfuge
     volumes:
       - ./archive:/data/import:ro
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.subterfuge.rule=Host(`subterfuge.kralofsky.com`)
-      - traefik.http.routers.subterfuge.tls.certresolver=le
   db:
     image: postgres:16
-    restart: unless-stopped
-    networks:
-      - internal
+    restart: always
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_USER=subterfuge
@@ -34,11 +27,5 @@ services:
   downloader:
     build: ./downloader
     restart: always
-    networks:
-      - internal
     volumes:
       - ./archive:/data:rw
-networks:
-  internal:
-  proxy:
-    external: true
