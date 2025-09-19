@@ -9,6 +9,7 @@ dependencies = [
     "gunicorn>=23.0.0",
     "lxml>=5.3.2",
     "psycopg2-binary>=2.9.10",
+    "pytz>=2025.2",
     "tqdm>=4.67.1",
     "whitenoise>=6.9.0",
 ]
